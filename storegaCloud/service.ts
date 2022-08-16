@@ -3,9 +3,9 @@ import { Request, Response } from 'express'
 
 export class UpFileService {
     constructor(private readonly upfilerepo: Upfile) { }
-    async upFile(res: Response) {
+    async upFile(file: any, res: Response) {
         try {
-            const result = await this.upfilerepo.upfile()
+            const result = await this.upfilerepo.upfile(file)
             res.send(result)
         }
         catch (err) {
