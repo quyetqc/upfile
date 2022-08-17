@@ -12,4 +12,13 @@ export class UpFileService {
             res.send("khong upfile duoc")
         }
     }
+    async downFile(res: Response) {
+        try {
+            const result = await this.upfilerepo.downFile()
+            res.send(result)
+        }
+        catch (err) {
+            res.send("khong down duoc file")
+        }
+    }
 }

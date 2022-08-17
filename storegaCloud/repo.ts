@@ -1,6 +1,6 @@
-import { NextFunction } from "express";
 import { initializeApp } from "firebase/app";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 import { authConfig } from "./config"
 
@@ -27,12 +27,32 @@ export class Upfile {
             };
             const uploadTask = await uploadBytes(storageRef, e.buffer, metadata);
             const linkFile = await getDownloadURL(uploadTask.ref);
-
             resultLinks.push({ [e.originalname]: linkFile })
-
         }
         return resultLinks;
     }
+    async downFile() {
+        try {
+            const app = initializeApp(authConfig.firebaseConfig);
+            const storage = getStorage(app);
+            getDownloadURL(ref(storage, '1234.jpg'))
+                .then((url) => {
+                    // `url` is the download URL for 'images/stars.jpg'
 
+                    // This can be downloaded directly:
+                    var solicitud = new XMLHttpRequest();
+                    const a = solicitud.open('GET', url, true);
+                    console.log(solicitud)
+                    solicitud.onload = () => {
+                        const blob = solicitud.response;
+                        console.log(blob)
+                    };
+                    solicitud.send();
+
+                })
+        }
+        catch (err) {
+            throw err
+        }
+    }
 }
-

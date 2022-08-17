@@ -9,8 +9,10 @@ export class UpFileController {
     createRouter() {
         const authorRouter = express.Router()
         authorRouter.post('/upfile', upload.array('photos', 10), (req, res) => {
-
             this.upFileService.upFile(req.files, res);
+        })
+        authorRouter.get('/down', (req, res) => {
+            this.upFileService.downFile(res);
         })
         return authorRouter;
     }
