@@ -3,6 +3,10 @@ import bodyParser from 'body-parser'
 import { UpFileController } from "./storegaCloud/controller"
 import { UpFileService } from "./storegaCloud/service"
 import { Upfile } from "./storegaCloud/repo"
+import saveAs from "file-saver"
+import JSZip from 'jszip';
+import { Blob } from "buffer";
+import FileSaver from "file-saver"
 const app = express()
 const port = 3000
 

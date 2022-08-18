@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getBlob, getBytes, getDownloadURL, getStorage, getStream, ref, uploadBytes } from "firebase/storage";
+import fetch from 'node-fetch';
 //var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 import JSZip from 'jszip';
@@ -38,53 +39,38 @@ export class Upfile {
         }
         return resultLinks;
     }
-    // async downFile() {
-    //     try {
-    //         const app = initializeApp(authConfig.firebaseConfig);
-    //         const storage = getStorage(app);
-    //         getDownloadURL(ref(storage, '1234.jpg'))
-    //             .then((url) => {
-    //                 // `url` is the download URL for 'images/stars.jpg'
 
-    //                 // This can be downloaded directly:
-    //                 var solicitud = new XMLHttpRequest();
-    //                 const a = solicitud.open('GET', url, true);
-    //                 console.log(solicitud)
-    //                 solicitud.onload = () => {
-    //                     const blob = solicitud.response;
-    //                     console.log(blob)
-    //                 };
-    //                 solicitud.send();
-
-    //             })
-    //     }
-    //     catch (err) {
-    //         throw err
-    //     }
-    // }
     async downFile() {
         const jszip = new JSZip();
         const app = initializeApp(authConfig.firebaseConfig);
         const storage = getStorage(app);
         const folderRef = ref(
             storage,
-            '11/2FImage_created_with_a_mobile_phone.png'
+            '11'
         );
         const folder = await listAll(folderRef);
-        console.log(folderRef)
-        console.log(folder)
-        const promises = folder.items
+
+        const promiseGetBytes = folder.items
             .map(async (item) => {
                 const file = await getMetadata(item);
-                const fileRef = ref(storage, item.fullPath);
-                const fileBlob = await getDownloadURL(fileRef).then((url) => {
-                    return fetch(url).then((response) => response.blob());
-                });
-                jszip.file(file.name, fileBlob);
+                const fileRef = ref(storage, file.fullPath);
+                return getBytes(fileRef);
             })
-            .reduce((acc, curr) => acc.then(() => curr), Promise.resolve());
-        await promises;
-        const blob = await jszip.generateAsync({ type: 'blob' });
-        saveAs(blob, 'download.zip');
+        const afterGetImage = await Promise.all(promiseGetBytes);
+
+        for (let i = 0; i < folder.items.length; i++) {
+            jszip.file(folder.items[i].name, afterGetImage[i]);
+        }
+
+        const blob = await jszip.generateAsync({ type: 'arraybuffer' });
+
+        const metadata = {
+            contentType: 'application/zip',
+        };
+
+        const zipFileRef = ref(storage, `zip/${Date.now()}.zip`);
+        const uploadTask = await uploadBytes(zipFileRef, blob, metadata);
+        const linkFile = await getDownloadURL(uploadTask.ref);
+        return linkFile
     };
 }
