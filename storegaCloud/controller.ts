@@ -15,7 +15,7 @@ export class UpFileController {
             this.upFileService.multiDown(res);
         })
         authorRouter.get('/down', (req, res) => {
-            this.upFileService.down(res);
+            this.upFileService.singleDown(res);
         })
         return authorRouter;
     }

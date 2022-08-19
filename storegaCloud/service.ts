@@ -21,7 +21,7 @@ export class UpFileService {
             res.send("khong down duoc file")
         }
     }
-    async down(res: Response) {
+    async singleDown(res: Response) {
         try {
             const result = await this.upfilerepo.singeDownFile()
             res.send(result)
