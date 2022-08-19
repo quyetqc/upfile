@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getBlob, getBytes, getDownloadURL, getStorage, getStream, ref, uploadBytes } from "firebase/storage";
+import { getBlob, getBytes, getDownloadURL, getStorage, getStream, ref, StorageReference, uploadBytes } from "firebase/storage";
 import fetch from 'node-fetch';
 //var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
@@ -19,7 +19,7 @@ interface fileType {
     mimetype: string;
 }
 
-export class Upfile {
+export class DoFile {
     constructor() { }
     async upfile(file: fileType[]) {
 
@@ -40,7 +40,7 @@ export class Upfile {
         return resultLinks;
     }
 
-    async downFile() {
+    async multiDownFile() {
         const jszip = new JSZip();
         const app = initializeApp(authConfig.firebaseConfig);
         const storage = getStorage(app);
@@ -49,19 +49,32 @@ export class Upfile {
             '11'
         );
         const folder = await listAll(folderRef);
-
-        const promiseGetBytes = folder.items
-            .map(async (item) => {
+        let newfolder: string[] = ["2.png"];
+        let endFolder = [];
+        let index_folder = 0;
+        let index_newfolder = 0;
+        while (index_newfolder < newfolder.length) {
+            if (folder.items[index_folder].name == newfolder[index_newfolder]) {
+                endFolder.push(folder.items[index_folder])
+                index_folder++; index_newfolder++;
+            }
+            else if (index_folder == (folder.items.length - 1)) {
+                index_folder = 0;
+                index_newfolder++;
+            }
+            else index_folder++;
+        }
+        const promiseGetBytes = endFolder
+            .map(async (item: StorageReference) => {
                 const file = await getMetadata(item);
                 const fileRef = ref(storage, file.fullPath);
                 return getBytes(fileRef);
             })
         const afterGetImage = await Promise.all(promiseGetBytes);
 
-        for (let i = 0; i < folder.items.length; i++) {
+        for (let i = 0; i < endFolder.length; i++) {
             jszip.file(folder.items[i].name, afterGetImage[i]);
         }
-
         const blob = await jszip.generateAsync({ type: 'arraybuffer' });
 
         const metadata = {
@@ -71,6 +84,17 @@ export class Upfile {
         const zipFileRef = ref(storage, `zip/${Date.now()}.zip`);
         const uploadTask = await uploadBytes(zipFileRef, blob, metadata);
         const linkFile = await getDownloadURL(uploadTask.ref);
+        return linkFile
+    };
+
+    async singeDownFile() {
+        const app = initializeApp(authConfig.firebaseConfig);
+        const storage = getStorage(app);
+        const folderRef = ref(
+            storage,
+            '11/2.png'
+        );
+        const linkFile = await getDownloadURL(folderRef);
         return linkFile
     };
 }

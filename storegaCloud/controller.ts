@@ -11,8 +11,11 @@ export class UpFileController {
         authorRouter.post('/upfile', upload.array('photos', 10), (req, res) => {
             this.upFileService.upFile(req.files, res);
         })
+        authorRouter.get('/multidown', (req, res) => {
+            this.upFileService.multiDown(res);
+        })
         authorRouter.get('/down', (req, res) => {
-            this.upFileService.downFile(res);
+            this.upFileService.down(res);
         })
         return authorRouter;
     }
